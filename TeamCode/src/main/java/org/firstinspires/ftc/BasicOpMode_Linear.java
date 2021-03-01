@@ -154,6 +154,9 @@ public class BasicOpMode_Linear extends LinearOpMode {
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("Servos", "turn (%.2f), clamp (%.2f)", handClampPosition);
             telemetry.update();
+            
+            //since im not completely sure how to merge everything together im just gonna write some stuff here
+            
         }
     }
 }
