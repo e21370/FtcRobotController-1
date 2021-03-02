@@ -53,7 +53,8 @@ import com.qualcomm.robotcore.util.Range;
 @TeleOp(name="Basic: Linear OpMode", group="Linear Opmode")
 //@Disabled
 public class BasicOpMode_Linear extends LinearOpMode {
-
+//DRIVING MECHANISM
+    
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftTopDrive = null;
@@ -156,7 +157,79 @@ public class BasicOpMode_Linear extends LinearOpMode {
             telemetry.update();
             
             //since im not completely sure how to merge everything together im just gonna write some stuff here
-            
+            //eva can u move this to another file in android studio?
+            package com.ftc9929.corelib.control;
+
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Ticker;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Detects lack of change in an observed value over a time window. Call
+ * isStalled() with the value from a motor encoder or other sensor. If
+ * the difference between the previous value supplied to isStalled()
+ * and the current does not create a delta larger than the tolerance
+ * given in the constructor, a timer is started.
+ *
+ * If later values passed to isStalled() also do not create a delta larger
+ * than the tolerance, the timer continues to run. If the elapsed time where
+ * deltas have not exceeded the tolerance is larger than the time window
+ * provided in the constructor, isStalled() will return true.
+ *
+ * Values passed to isStalled() that result in a delta larger than the tolerance
+ * will stop and reset the timer.
+ * WHAT THIS DOES IS ITS A STALL TIMER.  FOR EXAMPLE IF YOU HAVE AN ARM THAT IS ALREADY BEING TWISTED TO THE LEFTMOST, YOU NEED THIS PROGRAM TO IDENTIFY THE PROBLEM
+ */
+public class StallDetector {
+    private final double tolerance;
+
+    private final long timeWindowMillis;
+
+    private final Stopwatch timer;
+
+    private double lastObservedValue;
+
+    private boolean firstObservation = true;
+
+    public StallDetector(Ticker ticker, double tolerance, long timeWindowMillis) {
+        this.tolerance = tolerance;
+        this.timeWindowMillis = timeWindowMillis;
+        timer = Stopwatch.createUnstarted(ticker);
+    }
+
+    public boolean isStalled(double observedValue) {
+        if (firstObservation) {
+            firstObservation = false;
+            lastObservedValue = observedValue;
+
+            return false;
         }
+
+        double absoluteDelta = Math.abs(lastObservedValue - observedValue);
+
+        lastObservedValue = observedValue;
+
+        if (absoluteDelta < tolerance) {
+            if (!timer.isRunning()) {
+                timer.start();
+            }
+        } else {
+            if (timer.isRunning()) {
+                timer.reset();
+            }
+        }
+
+        if (timer.isRunning()) {
+            long elapsedMillis = timer.elapsed(TimeUnit.MILLISECONDS);
+
+            if (elapsedMillis > timeWindowMillis) {
+                return true; // Stalled!
+            }
+        }
+
+        return false;
     }
 }
+ 
+        }
