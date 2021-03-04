@@ -53,16 +53,17 @@ import com.qualcomm.robotcore.util.Range;
 @TeleOp(name="Basic: Linear OpMode", group="Linear Opmode")
 //@Disabled
 public class BasicOpMode_Linear extends LinearOpMode {
-//DRIVING MECHANISM
-    
+
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftTopDrive = null;
     private DcMotor leftBottomDrive = null;
     private DcMotor rightBottomDrive = null;
     private DcMotor rightTopDrive = null;
-    private DcMotor armDrive = null;
+    private Servo armDrive = null;
     private Servo handClampServo = null;
+    private DcMotor intake = null;
+    private DcMotor rev_intake = null;
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -75,16 +76,21 @@ public class BasicOpMode_Linear extends LinearOpMode {
         rightTopDrive = hardwareMap.get(DcMotor.class, "right_top_drive");
         leftBottomDrive = hardwareMap.get(DcMotor.class, "left_bottom_drive");
         rightTopDrive = hardwareMap.get(DcMotor.class, "right_bottom_drive");
-        armDrive = hardwareMap.get(DcMotor.class, "arm_drive");
+        armDrive = hardwareMap.get(Servo.class, "arm_drive");
         handClampServo = hardwareMap.get(Servo.class, "hand_clamp");
+        intake = hardwareMap.get(DcMotor.class, "intake_main");
+        rev_intake = hardwareMap.get(DcMotor.class, "intake_rev");
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         leftTopDrive.setDirection(DcMotor.Direction.REVERSE);
         rightTopDrive.setDirection(DcMotor.Direction.FORWARD);
         leftBottomDrive.setDirection(DcMotor.Direction.REVERSE);
         rightBottomDrive.setDirection(DcMotor.Direction.FORWARD);
-        armDrive.setDirection(DcMotor.Direction.FORWARD);
+        armDrive.setDirection(Servo.Direction.FORWARD);
         handClampServo.setDirection(Servo.Direction.FORWARD);
+        intake.setDirection(DcMotor.Direction.FORWARD);
+        rev_intake.setDirection(DcMotor.Direction.FORWARD);
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -93,24 +99,29 @@ public class BasicOpMode_Linear extends LinearOpMode {
         double speed_ratio = 1;
         double turn_ratio = 1;
 
+        //driving and turning the strafer chassis
+        double forward_drive = 0;
+        double backward_drive = 0;
+        double forward_right = 0;
+        double forward_right = 0;
+        double forward_right = 0;
+        double forward_right = 0;
+
         //double handTurnPosition = handTurnServo.getPosition();
 
         double handClampPosition = handClampServo.getPosition();
         // run until the end of the match (driver presses STOP)
+        boolean intake_on = false;
+        boolean shooting_on = false;
+        double arm_height = 0;
         while (opModeIsActive()) {
 
-            if (gamepad1.dpad_up == true){
-                speed_ratio = 1;
+            if (gamepad1.dpad_up == true && arm_height <= 10){// set 10 to: (maximum height-1)
+                arm_height++;
             }
-            if (gamepad1.dpad_down == true){
-                speed_ratio = 0.25;
+            if (gamepad1.dpad_down == true && arm_height >= 1){
+                arm_height--;
             }
-            if (gamepad1.dpad_left == true){
-                turn_ratio = 1;
-            }
-            if (gamepad1.dpad_right == true){
-                turn_ratio = 0.25;
-            };
             if (gamepad1.x == true){
                 speed_ratio = 0.5;
                 turn_ratio = 0.5;
@@ -155,6 +166,9 @@ public class BasicOpMode_Linear extends LinearOpMode {
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("Servos", "turn (%.2f), clamp (%.2f)", handClampPosition);
             telemetry.update();
+        }
+    }
+}
             
             //since im not completely sure how to merge everything together im just gonna write some stuff here
             //eva can u move this to another file in android studio?
